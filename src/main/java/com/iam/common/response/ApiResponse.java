@@ -2,9 +2,13 @@ package com.iam.common.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
+import reactor.core.publisher.Mono;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
     private boolean success;
@@ -58,11 +62,16 @@ public class ApiResponse<T> {
         return response;
     }
 
-    // Getters
-    public boolean isSuccess() { return success; }
-    public String getMessage() { return message; }
-    public T getData() { return data; }
-    public String getError() { return error; }
-    public List<String> getErrors() { return errors; }
-    public LocalDateTime getTimestamp() { return timestamp; }
+    // Reactive helpers (optional - for convenience)
+    public static <T> Mono<ApiResponse<T>> successMono(T data) {
+        return Mono.just(success(data));
+    }
+
+    public static <T> Mono<ApiResponse<T>> successMono(T data, String message) {
+        return Mono.just(success(data, message));
+    }
+
+    public static <T> Mono<ApiResponse<T>> errorMono(String error) {
+        return Mono.just(error(error));
+    }
 }

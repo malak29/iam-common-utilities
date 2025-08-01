@@ -14,35 +14,54 @@ repositories {
     mavenCentral()
 }
 
-// Configure as library, not executable
 jar {
     enabled = true
-    archiveClassifier = '' // Remove classifier
+    archiveClassifier = ''
 }
 
 bootJar {
-    enabled = false // Disable Spring Boot JAR creation
+    enabled = false
 }
 
 dependencies {
-    // Spring Boot starters
-    api 'org.springframework.boot:spring-boot-starter'
-    api 'org.springframework.boot:spring-boot-starter-web'
-    api 'org.springframework.boot:spring-boot-starter-security'
-    api 'org.springframework.boot:spring-boot-starter-validation'
-    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // Core Spring (no starters - this is a library)
+    api 'org.springframework:spring-context:6.1.15'
+    api 'org.springframework:spring-core:6.1.15'
 
-    // JWT
-    api 'io.jsonwebtoken:jjwt-api:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+    // Security (latest secure versions)
+    api 'org.springframework.security:spring-security-core:6.2.7'
+    api 'org.springframework.security:spring-security-crypto:6.2.7'
+    api 'org.springframework.security:spring-security-web:6.2.7'
+    api 'org.springframework.security:spring-security-config:6.2.7'
+
+    // Reactive support
+    api 'io.projectreactor:reactor-core:3.6.12'
+
+    // Validation
+    api 'org.springframework:spring-context-support:6.1.15'
+    api 'jakarta.validation:jakarta.validation-api:3.1.0'
+
+    // JWT (latest secure version)
+    api 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    // Jackson (latest secure versions)
+    api 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+    api 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.18.2'
 
     // Lombok
-    compileOnly 'org.projectlombok:lombok:1.18.32'
-    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+
+    // R2DBC for reactive database support
+    api 'org.springframework.data:spring-data-r2dbc:3.2.0'
 
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.projectreactor:reactor-test:3.6.12'
+    testCompileOnly 'org.projectlombok:lombok:1.18.36'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
 }
 
 test {

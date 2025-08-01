@@ -1,19 +1,18 @@
-// iam-common-utilities/src/main/java/com/iam/common/entity/User.java
 package com.iam.common.model;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
-@Table(name = "\"users\"")  // Quotes needed because 'user' is PostgreSQL reserved word
+@Table("users")
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,68 +20,66 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "userid")
+    @Column("userid")
     private UUID userId;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
+    @Column("email")
     private String email;
 
-    @Column(name = "username", nullable = false, unique = true, length = 100)
+    @Column("username")
     private String username;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column("name")
     private String name;
 
-    @Column(name = "hashedpassword", length = 255)
+    @Column("hashedpassword")
     private String hashedPassword;
 
-    @Column(name = "orgid", nullable = false)
+    @Column("orgid")
     private Integer orgId;
 
-    @Column(name = "departmentid", nullable = false)
+    @Column("departmentid")
     private Integer departmentId;
 
-    @Column(name = "usertypeid", nullable = false)
+    @Column("usertypeid")
     private Integer userTypeId;
 
-    @Column(name = "authtypeid", nullable = false)
+    @Column("authtypeid")
     private Integer authTypeId;
 
-    @Column(name = "userstatusid", nullable = false)
+    @Column("userstatusid")
     private Integer userStatusId;
 
-    @CreationTimestamp
-    @Column(name = "createdat", updatable = false)
+    @CreatedDate
+    @Column("createdat")
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updatedat")
+    @LastModifiedDate
+    @Column("updatedat")
     private LocalDateTime updatedAt;
 
-    // Authentication-specific fields
-    @Column(name = "lastlogin")
+    @Column("lastlogin")
     private LocalDateTime lastLogin;
 
-    @Column(name = "failedloginattempts")
+    @Column("failedloginattempts")
     @Builder.Default
     private Integer failedLoginAttempts = 0;
 
-    @Column(name = "accountlocked")
+    @Column("accountlocked")
     @Builder.Default
     private Boolean accountLocked = false;
 
-    @Column(name = "passwordresettoken", length = 255)
+    @Column("passwordresettoken")
     private String passwordResetToken;
 
-    @Column(name = "passwordresettokenexpiry")
+    @Column("passwordresettokenexpiry")
     private LocalDateTime passwordResetTokenExpiry;
 
-    @Column(name = "emailverified")
+    @Column("emailverified")
     @Builder.Default
     private Boolean emailVerified = false;
 
-    @Column(name = "emailverificationtoken", length = 255)
+    @Column("emailverificationtoken")
     private String emailVerificationToken;
 
     // Convenience methods

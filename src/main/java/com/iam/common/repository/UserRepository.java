@@ -1,90 +1,54 @@
-// iam-common-utilities/src/main/java/com/iam/common/repository/UserRepository.java
 package com.iam.common.repository;
 
 import com.iam.common.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.r2dbc.repository.Modifying;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
+public interface UserRepository extends ReactiveCrudRepository<User, UUID> {
 
     // Basic lookups
+    Mono<Boolean> existsByEmail(String email);
+    Mono<Boolean> existsByUsername(String username);
+    Mono<User> findByEmail(String email);
+    Mono<User> findByUsername(String username);
 
-    boolean existsByEmail(String email);
-
-    boolean existsByUsername(String username);
-
-    Optional<User> findUserByEmail(String email);
-
-    Optional<User> findUserByUsername(String username);
-
-    @Query("SELECT u FROM User u WHERE (u.email = :emailOrUsername OR u.username = :emailOrUsername)")
-    Optional<User> findUserByEmailOrUsername(@Param("emailOrUsername") String emailOrUsername);
+    @Query("SELECT * FROM users WHERE email = :email OR username = :email")
+    Mono<User> findByEmailOrUsername(String email);
 
     // Status-based queries
-    @Query("SELECT u FROM User u WHERE u.userStatusId = :statusId")
-    List<User> findUserByUserStatusId(@Param("statusId") Integer statusId);
+    Flux<User> findByUserStatusId(Integer statusId);
+    Mono<User> findByEmailAndUserStatusId(String email, Integer statusId);
 
-    @Query("SELECT u FROM User u WHERE u.email = :email AND u.userStatusId = :statusId")
-    Optional<User> findUserByEmailAndStatus(@Param("email") String email, @Param("statusId") Integer statusId);
+    // Organization queries
+    Flux<User> findByOrgId(Integer orgId);
+    Flux<User> findByDepartmentId(Integer departmentId);
+    Flux<User> findByOrgIdAndDepartmentId(Integer orgId, Integer departmentId);
 
-    // Organization and department queries
-    @Query("SELECT u FROM User u WHERE u.orgId = :orgId")
-    List<User> findUsersByOrgId(@Param("orgId") Integer orgId);
+    // Authentication queries
+    @Query("SELECT * FROM users WHERE passwordresettoken = :token AND passwordresettokenexpiry > :now")
+    Mono<User> findByValidPasswordResetToken(String token, LocalDateTime now);
 
-    @Query("SELECT u FROM User u WHERE u.departmentId = :departmentId")
-    List<User> findUsersByDepartmentId(@Param("departmentId") Integer departmentId);
+    Mono<User> findByEmailVerificationToken(String token);
+    Flux<User> findByAccountLocked(Boolean locked);
 
-    @Query("SELECT u FROM User u WHERE u.orgId = :orgId AND u.departmentId = :departmentId")
-    List<User> findUsersByOrgIdAndDepartmentId(@Param("orgId") Integer orgId, @Param("departmentId") Integer departmentId);
-
-    // Authentication-specific queries
-    @Query("SELECT u FROM User u WHERE u.passwordResetToken = :token AND u.passwordResetTokenExpiry > :now")
-    Optional<User> findUserByValidPasswordResetToken(@Param("token") String token, @Param("now") LocalDateTime now);
-
-    @Query("SELECT u FROM User u WHERE u.emailVerificationToken = :token")
-    Optional<User> findUserByEmailVerificationToken(@Param("token") String token);
-
-    @Query("SELECT u FROM User u WHERE u.accountLocked = true")
-    List<User> findUserLockedAccounts();
-
-    // Update operations for authentication
+    // Update operations
     @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.lastLogin = :loginTime WHERE u.userId = :userId")
-    void updateUserLastLogin(@Param("userId") UUID userId, @Param("loginTime") LocalDateTime loginTime);
+    @Query("UPDATE users SET lastlogin = :loginTime WHERE userid = :userId")
+    Mono<Integer> updateLastLogin(UUID userId, LocalDateTime loginTime);
 
     @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.failedLoginAttempts = :attempts WHERE u.userId = :userId")
-    void updateUserFailedLoginAttempts(@Param("userId") UUID userId, @Param("attempts") Integer attempts);
+    @Query("UPDATE users SET failedloginattempts = :attempts WHERE userid = :userId")
+    Mono<Integer> updateFailedLoginAttempts(UUID userId, Integer attempts);
 
     @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.accountLocked = :locked WHERE u.userId = :userId")
-    void updateUserAccountLocked(@Param("userId") UUID userId, @Param("locked") Boolean locked);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.passwordResetToken = :token, u.passwordResetTokenExpiry = :expiry WHERE u.userId = :userId")
-    void updateUserPasswordResetToken(@Param("userId") UUID userId, @Param("token") String token, @Param("expiry") LocalDateTime expiry);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.hashedPassword = :hashedPassword, u.passwordResetToken = null, u.passwordResetTokenExpiry = null WHERE u.userId = :userId")
-    void updateUserPassword(@Param("userId") UUID userId, @Param("hashedPassword") String hashedPassword);
-
-    @Modifying
-    @Transactional
-    @Query("UPDATE User u SET u.emailVerified = true, u.emailVerificationToken = null WHERE u.userId = :userId")
-    void verifyUserEmail(@Param("userId") UUID userId);
+    @Query("UPDATE users SET accountlocked = :locked WHERE userid = :userId")
+    Mono<Integer> updateAccountLocked(UUID userId, Boolean locked);
 }
