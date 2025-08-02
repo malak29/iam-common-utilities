@@ -121,4 +121,8 @@ public class JwtTokenProvider {
     private Date extractExpiration(String token) {
         return extractAllClaims(token).getExpiration();
     }
+
+    public long getExpirationTime() {
+        return jwtExpirationMs;
+    }
 }
